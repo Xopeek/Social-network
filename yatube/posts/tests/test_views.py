@@ -67,7 +67,8 @@ class PostsPagesTest(TestCase):
                 self.assertTemplateUsed(response, template)
 
     def test_home_page_correct_context(self):
-        """Шаблон index сформирован с правильным контекстом и правильная картинка."""
+        """Шаблон index сформирован с правильным контекстом
+         и правильная картинка."""
         cache.clear()
         response = self.authorized_client.get(reverse('posts:index'))
         post_list = list(Post.objects.all()[:10])
@@ -76,7 +77,8 @@ class PostsPagesTest(TestCase):
         self.assertEqual(list(response.context['page_obj']), post_image)
 
     def test_group_post_correct_contex(self):
-        """Шаблон group_list сформирован с правильным контекстом и правильная картинка."""
+        """Шаблон group_list сформирован с правильным контекстом
+         и правильная картинка."""
         response = self.authorized_client.get(
             reverse('posts:group_list', kwargs={'slug': self.group.slug})
         )
@@ -87,7 +89,8 @@ class PostsPagesTest(TestCase):
         self.assertEqual(list(response.context['page_obj']), post_group_list)
 
     def test_profile_correct_context(self):
-        """Шаблон profile сформирован с правильным контекстом и правильная картинка."""
+        """Шаблон profile сформирован с правильным контекстом
+         и правильная картинка."""
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': 'Name'})
         )
@@ -221,6 +224,9 @@ class FollowTestCase(TestCase):
         follow = Follow.objects.latest('id')
         self.assertEqual(follow.user, self.user)
         self.assertEqual(follow.author, self.author)
+        self.assertRedirects(
+            response, reverse('posts:profile',
+                              kwargs={'username': self.author.username}))
 
     def test_unfollow_authorized_author(self):
         """Проверка, что авторизованный пользователь может отписаться."""
@@ -232,14 +238,9 @@ class FollowTestCase(TestCase):
                     kwargs={'username': self.author.username})
         )
         self.assertEqual(Follow.objects.count(), 0)
-
-    def test_guest_not_following_author(self):
-        """Проверка, что неавторизованный пользователь не может подписаться."""
-        response = self.guest_client.post(
-            reverse('posts:profile_follow', kwargs={
-                'username': self.author.username})
-        )
-        self.assertEqual(Follow.objects.count(), 0)
+        self.assertRedirects(
+            response, reverse('posts:profile',
+                              kwargs={'username': self.author.username}))
 
     def test_correct_context_follow(self):
         """Проверка, что новая запись появляется у подписчиков."""
@@ -258,7 +259,8 @@ class FollowTestCase(TestCase):
         self.assertEqual(response.context['page_obj'][0].author, self.author)
 
     def test_correct_context_unfollow(self):
-        """Проверка, что у пользователя не появляется запись, тех на кого он не подписан."""
+        """Проверка, что у пользователя не появляется запись,
+         тех на кого он не подписан."""
         Post.objects.create(
             author=self.author,
             text='ASDA'

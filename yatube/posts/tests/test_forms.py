@@ -130,11 +130,13 @@ class CommentFormCreateTest(TestCase):
         self.assertEqual(last_comment.text, form_data['text'])
 
     def test_create_comment_not_auth(self):
+        """Проверка, что не авторизованный пользователь
+        не может комментировать запись."""
         comments_count = Comment.objects.count()
         form_data = {
             'text': 'Это второй комментарий'
         }
-        response = self.guest_client.post(
+        self.guest_client.post(
             reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
             data=form_data,
             follow=True
